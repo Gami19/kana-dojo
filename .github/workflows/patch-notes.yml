@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat/discord-patch-notes
+      - feature/discord-patch-notes
     paths:
       - features/PatchNotes/patchNotesData.json
   workflow_dispatch:
