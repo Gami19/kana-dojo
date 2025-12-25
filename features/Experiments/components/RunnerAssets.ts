@@ -7,6 +7,10 @@ export interface GameAssets {
   daruma: HTMLCanvasElement;
   cloud: HTMLCanvasElement;
   mountains: HTMLCanvasElement;
+  oni: HTMLCanvasElement;
+  kasaObake: HTMLCanvasElement;
+  pagoda: HTMLCanvasElement;
+  chochinObake: HTMLCanvasElement;
 }
 
 const createCanvas = (width: number, height: number) => {
@@ -22,8 +26,7 @@ export const generateAssets = (): GameAssets => {
   const kCtx = kitsune.getContext('2d')!;
 
   // Body (White spiritual flame-like shape)
-  kCtx.shadowColor = '#fff';
-  kCtx.shadowBlur = 10;
+  // REMOVED: kCtx.shadowColor/Blur (No aura)
   kCtx.fillStyle = '#ffffff';
 
   kCtx.beginPath();
@@ -48,7 +51,6 @@ export const generateAssets = (): GameAssets => {
 
   // Red Markings (Face)
   kCtx.fillStyle = '#ff0000';
-  kCtx.shadowBlur = 0;
   kCtx.beginPath();
   kCtx.moveTo(45, 18); // Forehead
   kCtx.lineTo(48, 22);
@@ -63,8 +65,7 @@ export const generateAssets = (): GameAssets => {
 
   // Tails (Multiple)
   kCtx.fillStyle = '#fff';
-  kCtx.shadowBlur = 15;
-  kCtx.shadowColor = '#aaddff'; // Blue spiritual glow
+  // REMOVED: Shadow on tails
   for (let i = 0; i < 3; i++) {
     kCtx.beginPath();
     kCtx.moveTo(15, 35);
@@ -195,126 +196,112 @@ export const generateAssets = (): GameAssets => {
   lCtx.lineTo(40, 15);
   lCtx.fill();
 
-  // 5. Mt Fuji (Background) - 800x300 (Wide landscape)
-  const fuji = createCanvas(800, 300);
+  // 5. Mt Fuji (Background) - 800x400 (Larger, more detail)
+  const fuji = createCanvas(800, 400);
   const fCtx = fuji.getContext('2d')!;
 
-  // Gradient Sky (handled in game, let's just draw the mountain)
-  // Mountain Body
-  const fGradient = fCtx.createLinearGradient(0, 0, 0, 300);
-  fGradient.addColorStop(0, '#fff'); // Snow cap
-  fGradient.addColorStop(0.3, '#3b82f6'); // Blue top
-  fGradient.addColorStop(1, '#1e3a8a'); // Dark blue base
+  // Mountain Body - More realistic colors
+  const fGradient = fCtx.createLinearGradient(0, 0, 0, 400);
+  fGradient.addColorStop(0.2, '#ffffff'); // Snow
+  fGradient.addColorStop(0.4, '#a5b4fc'); // Haze blue
+  fGradient.addColorStop(1, '#6366f1'); // Deep Indigo
 
   fCtx.fillStyle = fGradient;
   fCtx.beginPath();
-  fCtx.moveTo(200, 300);
-  fCtx.quadraticCurveTo(400, 50, 600, 300); // Iconic slope
+  // Classic Fuji Shape: Concave slopes
+  fCtx.moveTo(400, 50); // Peak
+  fCtx.bezierCurveTo(550, 150, 650, 350, 750, 400); // Right slope (concave)
+  fCtx.lineTo(50, 400); // Base Left
+  fCtx.bezierCurveTo(150, 350, 250, 150, 400, 50); // Left slope (concave)
   fCtx.fill();
 
-  // Snow Cap (Jagged)
+  // Snow Cap (More distinct zigzag)
   fCtx.fillStyle = '#fff';
   fCtx.beginPath();
-  fCtx.moveTo(330, 120);
-  fCtx.lineTo(350, 80); // Peak left
-  fCtx.lineTo(400, 90); // Crater
-  fCtx.lineTo(450, 80); // Peak right
-  fCtx.lineTo(470, 120);
-  // Jagged bottom of snow
-  fCtx.lineTo(430, 140);
-  fCtx.lineTo(400, 130);
-  fCtx.lineTo(370, 140);
+  fCtx.moveTo(400, 50); // Peak
+  // Right side zigzag down
+  let rX = 400;
+  let rY = 50;
+  // Approximating slope points for zigzags
+  fCtx.lineTo(430, 100);
+  fCtx.lineTo(410, 110);
+  fCtx.lineTo(440, 130);
+  fCtx.lineTo(420, 140);
+  fCtx.lineTo(450, 160);
+  // Cut across
+  fCtx.lineTo(350, 160);
+  // Left side zigzag up
+  fCtx.lineTo(380, 140);
+  fCtx.lineTo(360, 130);
+  fCtx.lineTo(390, 110);
+  fCtx.lineTo(370, 100);
+  fCtx.closePath();
   fCtx.fill();
 
-  // 6. Daruma (Obstacle - replaces Rock) - 40x40
+  // 6. Daruma (Obstacle)
   const daruma = createCanvas(40, 40);
   const dCtx = daruma.getContext('2d')!;
-
-  // Body (Red sphere)
   dCtx.shadowColor = 'rgba(0,0,0,0.3)';
   dCtx.shadowBlur = 4;
   dCtx.fillStyle = '#cc0000';
   dCtx.beginPath();
-  dCtx.arc(20, 22, 18, 0, Math.PI * 2); // Slightly lower center
+  dCtx.arc(20, 22, 18, 0, Math.PI * 2);
   dCtx.fill();
-
-  // Face Area (White)
   dCtx.shadowBlur = 0;
   dCtx.fillStyle = '#fff';
   dCtx.beginPath();
   dCtx.ellipse(20, 20, 12, 10, 0, 0, Math.PI * 2);
   dCtx.fill();
-
-  // Face Details
   dCtx.fillStyle = '#000';
-  // Eyes (One filled, one empty for goal-setting, or both filled for menacing)
   dCtx.beginPath();
-  dCtx.arc(16, 18, 2, 0, Math.PI * 2); // Left eye
-  dCtx.arc(24, 18, 2, 0, Math.PI * 2); // Right eye
+  dCtx.arc(16, 18, 2, 0, Math.PI * 2);
+  dCtx.arc(24, 18, 2, 0, Math.PI * 2);
   dCtx.fill();
-
-  // Beard/Mustache
   dCtx.strokeStyle = '#000';
   dCtx.lineWidth = 1;
   dCtx.beginPath();
   dCtx.moveTo(12, 22);
   dCtx.quadraticCurveTo(20, 28, 28, 22);
   dCtx.stroke();
-
-  // Gold markings
   dCtx.strokeStyle = '#ffd700';
   dCtx.lineWidth = 2;
   dCtx.beginPath();
-  dCtx.arc(20, 22, 14, 0, Math.PI * 2); // Outline hint
+  dCtx.arc(20, 22, 14, 0, Math.PI * 2);
   dCtx.stroke();
 
-  // 7. Cloud (Background) - 100x50
+  // 7. Cloud (Background)
   const cloud = createCanvas(120, 60);
   const cCtx = cloud.getContext('2d')!;
   cCtx.fillStyle = '#ffffff';
-  cCtx.shadowColor = 'rgba(255,255,255,0.8)'; // Glow
+  cCtx.shadowColor = 'rgba(255,255,255,0.8)';
   cCtx.shadowBlur = 10;
-
-  // Cloud puffs
   const drawPuff = (x: number, y: number, r: number) => {
     cCtx.beginPath();
     cCtx.arc(x, y, r, 0, Math.PI * 2);
     cCtx.fill();
   };
-
   drawPuff(30, 30, 20);
   drawPuff(60, 25, 25);
   drawPuff(90, 30, 20);
-  drawPuff(60, 40, 15); // Bottom filler
+  drawPuff(60, 40, 15);
 
-  // 8. Mountains (Background Layer) - 1600x200 (Wide for scrolling)
+  // 8. Mountains (Seamless background)
   const mountains = createCanvas(1600, 200);
   const mCtx = mountains.getContext('2d')!;
-
-  // Clear transparent
-
-  // Layer 1: Far/Darker
-  mCtx.fillStyle = '#cbd5e1'; // Light slate
+  mCtx.fillStyle = '#cbd5e1';
   mCtx.beginPath();
   mCtx.moveTo(0, 200);
   for (let x = 0; x <= 1600; x += 50) {
-    // 3 full cycles for seamless loop (1600px width)
-    // Normalized X: x / 1600
-    // Angle: normalized * Math.PI * 2 * 3
     const angle = (x / 1600) * Math.PI * 2;
-
     const yStrc = Math.sin(angle * 3) * 30 + Math.cos(angle * 5) * 20;
     mCtx.lineTo(x, 200 - 60 - yStrc);
   }
   mCtx.lineTo(1600, 200);
   mCtx.fill();
-
-  // Layer 2: Closer
   mCtx.fillStyle = '#94a3b8';
   mCtx.beginPath();
   mCtx.moveTo(0, 200);
   for (let x = 0; x <= 1600; x += 80) {
-    // 5 full cycles
     const angle = (x / 1600) * Math.PI * 2;
     const yStrc = Math.abs(Math.sin(angle * 5)) * 50;
     mCtx.lineTo(x, 200 - 40 - yStrc);
@@ -322,5 +309,179 @@ export const generateAssets = (): GameAssets => {
   mCtx.lineTo(1600, 200);
   mCtx.fill();
 
-  return { kitsune, torii, tengu, lantern, fuji, daruma, cloud, mountains };
+  // 9. Oni (Demon Mask) - 50x50
+  const oni = createCanvas(50, 50);
+  const oCtx = oni.getContext('2d')!;
+
+  // Face
+  oCtx.fillStyle = '#7f1d1d'; // Dark Red
+  oCtx.beginPath();
+  oCtx.moveTo(10, 10);
+  oCtx.quadraticCurveTo(25, 50, 40, 10); // Jaw
+  oCtx.quadraticCurveTo(25, -10, 10, 10); // Forehead
+  oCtx.fill();
+
+  // Horns
+  oCtx.fillStyle = '#fcd34d'; // Gold/Bone
+  oCtx.beginPath();
+  oCtx.moveTo(12, 10);
+  oCtx.lineTo(5, -5);
+  oCtx.lineTo(18, 8); // Left
+  oCtx.moveTo(38, 10);
+  oCtx.lineTo(45, -5);
+  oCtx.lineTo(32, 8); // Right
+  oCtx.fill();
+
+  // Eyes (Surprisngly glowy)
+  oCtx.fillStyle = '#ffff00';
+  oCtx.beginPath();
+  oCtx.arc(18, 15, 3, 0, Math.PI * 2);
+  oCtx.arc(32, 15, 3, 0, Math.PI * 2);
+  oCtx.fill();
+
+  // Teeth
+  oCtx.fillStyle = '#fff';
+  oCtx.beginPath();
+  oCtx.moveTo(20, 30);
+  oCtx.lineTo(22, 35);
+  oCtx.lineTo(24, 30);
+  oCtx.moveTo(26, 30);
+  oCtx.lineTo(28, 35);
+  oCtx.lineTo(30, 30);
+  oCtx.fill();
+
+  // 10. Kasa-Obake (Umbrella Ghost) - 40x70
+  const kasaObake = createCanvas(50, 70);
+  const kaCtx = kasaObake.getContext('2d')!;
+
+  // Umbrella Body (Triangle)
+  kaCtx.fillStyle = '#6d28d9'; // Purple
+  kaCtx.beginPath();
+  kaCtx.moveTo(25, 5);
+  kaCtx.lineTo(5, 45);
+  kaCtx.lineTo(45, 45);
+  kaCtx.fill();
+
+  // Ribs
+  kaCtx.strokeStyle = '#ddd';
+  kaCtx.lineWidth = 1;
+  kaCtx.beginPath();
+  kaCtx.moveTo(25, 5);
+  kaCtx.lineTo(15, 45);
+  kaCtx.moveTo(25, 5);
+  kaCtx.lineTo(35, 45);
+  kaCtx.stroke();
+
+  // Single Eye
+  kaCtx.fillStyle = '#fff';
+  kaCtx.beginPath();
+  kaCtx.arc(25, 25, 8, 0, Math.PI * 2);
+  kaCtx.fill();
+  kaCtx.fillStyle = '#000';
+  kaCtx.beginPath();
+  kaCtx.arc(25, 25, 3, 0, Math.PI * 2);
+  kaCtx.fill();
+
+  // Tongue
+  kaCtx.fillStyle = '#ec4899';
+  kaCtx.beginPath();
+  kaCtx.moveTo(20, 35);
+  kaCtx.quadraticCurveTo(25, 50, 35, 35);
+  kaCtx.fill();
+
+  // Leg
+  kaCtx.strokeStyle = '#fbbf24';
+  kaCtx.lineWidth = 3;
+  kaCtx.beginPath();
+  kaCtx.moveTo(25, 45);
+  kaCtx.lineTo(25, 60);
+  kaCtx.lineTo(30, 60); // Foot
+  kaCtx.stroke();
+  // Geta (Shoe)
+  kaCtx.fillStyle = '#78350f';
+  kaCtx.fillRect(25, 60, 10, 5);
+
+  // 11. Pagoda (Background Element) - 100x200
+  const pagoda = createCanvas(100, 200);
+  const pCtx = pagoda.getContext('2d')!;
+
+  pCtx.fillStyle = '#1e1b4b'; // Dark silhouette blue
+
+  const drawRoof = (y: number, w: number) => {
+    pCtx.beginPath();
+    pCtx.moveTo(50 - w / 2, y);
+    pCtx.quadraticCurveTo(50, y - 10, 50 + w / 2, y); // Curve up
+    pCtx.lineTo(50 + w / 2 + 5, y + 5);
+    pCtx.lineTo(50 - w / 2 - 5, y + 5);
+    pCtx.fill();
+  };
+
+  // Spire
+  pCtx.fillRect(48, 5, 4, 30);
+
+  // Roofs (5 stories)
+  for (let i = 0; i < 5; i++) {
+    drawRoof(40 + i * 30, 30 + i * 10);
+    // Body
+    if (i < 4) pCtx.fillRect(40, 45 + i * 30, 20, 25);
+  }
+
+  // 12. Chochin Obake (Lantern Ghost) - 40x60
+  const chochinObake = createCanvas(50, 70);
+  const chCtx = chochinObake.getContext('2d')!;
+
+  // Paper body
+  chCtx.fillStyle = '#f59e0b'; // Amber paper
+  chCtx.shadowColor = '#f59e0b';
+  chCtx.shadowBlur = 10;
+  chCtx.fillRect(10, 10, 30, 40);
+
+  // Ribs
+  chCtx.shadowBlur = 0;
+  chCtx.strokeStyle = '#92400e';
+  chCtx.beginPath();
+  chCtx.moveTo(10, 20);
+  chCtx.lineTo(40, 20);
+  chCtx.moveTo(10, 30);
+  chCtx.lineTo(40, 30);
+  chCtx.moveTo(10, 40);
+  chCtx.lineTo(40, 40);
+  chCtx.stroke();
+
+  // Eye (Single big eye)
+  chCtx.fillStyle = '#fff';
+  chCtx.beginPath();
+  chCtx.arc(25, 25, 8, 0, Math.PI * 2);
+  chCtx.fill();
+  chCtx.fillStyle = '#000';
+  chCtx.beginPath();
+  chCtx.arc(25, 25, 3, 0, Math.PI * 2);
+  chCtx.fill();
+
+  // Tongue (Licking)
+  chCtx.fillStyle = '#db2777';
+  chCtx.beginPath();
+  chCtx.moveTo(20, 45);
+  chCtx.quadraticCurveTo(25, 60, 35, 45);
+  chCtx.fill();
+
+  // Top/Bottom caps
+  chCtx.fillStyle = '#1f2937';
+  chCtx.fillRect(8, 5, 34, 5); // Top
+  chCtx.fillRect(8, 50, 34, 5); // Bottom
+
+  return {
+    kitsune,
+    torii,
+    tengu,
+    lantern,
+    fuji,
+    daruma,
+    cloud,
+    mountains,
+    oni,
+    kasaObake,
+    pagoda,
+    chochinObake
+  };
 };

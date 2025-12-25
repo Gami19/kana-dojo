@@ -128,7 +128,7 @@ const NavLink = ({ item, isActive, onClick, variant }: NavLinkProps) => {
       return (
         <Icon
           className={clsx(
-            'shrink-0 fill-current',
+            'shrink-0 ',
             item.animateWhenInactive &&
               !isActive &&
               'motion-safe:animate-bounce',

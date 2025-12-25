@@ -10,7 +10,7 @@ import { generateAssets, GameAssets } from './RunnerAssets';
 // Game Constants
 const GRAVITY = 0.6;
 const JUMP_FORCE = -15; // Increased jump force for snappier feel
-const BASE_SPEED = 6; // Standard speed
+const BASE_SPEED = 5; // Reduced from 6 for better control
 const SPEED_INCREMENT = 0.001; // Speed accumulated per frame
 const OBSTACLE_SPAWN_MIN = 60; // Minimum frames between spawns
 const OBSTACLE_SPAWN_MAX = 120; // Maximum frames between spawns (decreases with speed)
@@ -37,7 +37,7 @@ interface Obstacle {
   y: number;
   width: number;
   height: number;
-  type: 'TORII' | 'DARUMA' | 'TENGU';
+  type: 'TORII' | 'DARUMA' | 'TENGU' | 'ONI' | 'KASA_OBAKE' | 'CHOCHIN_OBAKE';
   passed: boolean;
 }
 
@@ -344,7 +344,60 @@ export const RunnerGame = () => {
         ctx.globalAlpha = 1.0;
       }
 
-      // Parallax Mountains (Pre-rendered Asset - Fixed)
+      // 2. Sun/Moon (Far Background)
+      if (startAssetsRef.current) {
+        const x = 700;
+        const y = 80;
+        ctx.beginPath();
+        ctx.arc(x, y, 40, 0, Math.PI * 2);
+        if (isNight) {
+          ctx.fillStyle = '#fef3c7'; // Pale yellow moon
+          ctx.shadowColor = '#fef3c7';
+          ctx.shadowBlur = 20;
+        } else {
+          ctx.fillStyle = '#ef4444'; // Rising Sun red
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 20;
+        }
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset
+      }
+
+      // 2.5. Mt Fuji (Static Far Background) - Draw BEFORE Mountains/Pagoda
+      if (startAssetsRef.current && !isNight) {
+        ctx.globalAlpha = 0.9;
+        const fujiX = CANVAS_WIDTH / 2 - 400;
+        const shift = (distanceRef.current * 0.01) % 50;
+
+        ctx.drawImage(
+          startAssetsRef.current.fuji,
+          Math.floor(fujiX - shift),
+          GROUND_HEIGHT - 350
+        );
+        ctx.globalAlpha = 1.0;
+      }
+
+      // 3. Distant Pagoda (Parallax Layer 2)
+      if (startAssetsRef.current) {
+        const pagodaSpeed = 0.05; // Very slow
+        const pOffset = Math.floor(
+          (distanceRef.current * pagodaSpeed) % (CANVAS_WIDTH + 200)
+        );
+        const pX = CANVAS_WIDTH - pOffset;
+
+        // Only draw if visible
+        if (pX > -150 && pX < CANVAS_WIDTH + 150) {
+          ctx.globalAlpha = isNight ? 0.4 : 0.6; // Silhouetted
+          ctx.drawImage(
+            startAssetsRef.current.pagoda,
+            Math.floor(pX),
+            GROUND_HEIGHT - 180
+          ); // Just peeking over hills
+          ctx.globalAlpha = 1.0;
+        }
+      }
+
+      // 4. Parallax Mountains (Pre-rendered Asset - Fixed)
       if (startAssetsRef.current) {
         const mountainSpeed = 0.2;
         const bgWidth = 1600; // Match asset width
@@ -365,21 +418,6 @@ export const RunnerGame = () => {
           yPos
         );
 
-        ctx.globalAlpha = 1.0;
-      }
-
-      // Draw Mt Fuji (Asset) - Behind ground, large parallax
-      if (startAssetsRef.current && !isNight) {
-        ctx.globalAlpha = 0.8;
-        // Parallax Fuji
-        const fujiX =
-          CANVAS_WIDTH / 2 -
-          ((distanceRef.current * 0.02) % (CANVAS_WIDTH + 400));
-        ctx.drawImage(
-          startAssetsRef.current.fuji,
-          Math.floor(fujiX),
-          GROUND_HEIGHT - 300
-        );
         ctx.globalAlpha = 1.0;
       }
 
@@ -413,11 +451,11 @@ export const RunnerGame = () => {
         player.canDoubleJump = true;
         player.isDiving = false;
       } else {
-        // Rotate while jumping for style
+        // Rotate while jumping for style (Smoother)
         if (player.isDiving) {
-          player.rotation += 15; // Fast spin on dive
+          player.rotation += 20; // Fast spin on dive
         } else {
-          player.rotation += 3;
+          player.rotation += 6; // Steady flip ~1s per full rotation
         }
       }
 
@@ -439,8 +477,12 @@ export const RunnerGame = () => {
         ) {
           const typeRoll = Math.random();
           let type: Obstacle['type'] = 'DARUMA';
-          if (typeRoll > 0.7) type = 'TORII';
-          else if (typeRoll > 0.45) type = 'TENGU';
+
+          if (typeRoll > 0.9) type = 'ONI';
+          else if (typeRoll > 0.8) type = 'CHOCHIN_OBAKE';
+          else if (typeRoll > 0.7) type = 'TORII';
+          else if (typeRoll > 0.55) type = 'KASA_OBAKE';
+          else if (typeRoll > 0.4) type = 'TENGU';
 
           // Dimensions & Position
           let height = 40;
@@ -454,13 +496,20 @@ export const RunnerGame = () => {
           } else if (type === 'TENGU') {
             height = 30;
             width = 30;
-            // Flying height variations: Low (jump over), High (run under), Mid (careful)
-            const flightMode = Math.random();
-            if (flightMode > 0.66)
-              y = GROUND_HEIGHT - 90; // High
-            else if (flightMode > 0.33)
-              y = GROUND_HEIGHT - 50; // Mid
-            else y = GROUND_HEIGHT - 25; // Low ground skimmer
+            y = GROUND_HEIGHT - 90; // Always high flyer
+          } else if (type === 'ONI') {
+            height = 50;
+            width = 50;
+            y = GROUND_HEIGHT - 50;
+          } else if (type === 'KASA_OBAKE') {
+            height = 70;
+            width = 50;
+            // Hops!
+            y = GROUND_HEIGHT - 70;
+          } else if (type === 'CHOCHIN_OBAKE') {
+            height = 60;
+            width = 40;
+            y = GROUND_HEIGHT - 120; // Very high floater
           }
 
           obstaclesRef.current.push({
@@ -514,10 +563,21 @@ export const RunnerGame = () => {
       for (let i = obstaclesRef.current.length - 1; i >= 0; i--) {
         const obs = obstaclesRef.current[i];
 
-        // TENGU move faster and slightly wavey
+        // TENGU move faster
         let moveSpeed = speedRef.current;
         if (obs.type === 'TENGU') {
-          moveSpeed *= 1.2;
+          moveSpeed *= 1.3;
+        }
+        // Kasa-Obake hops
+        if (obs.type === 'KASA_OBAKE') {
+          obs.y =
+            GROUND_HEIGHT -
+            70 -
+            Math.abs(Math.sin(frameRef.current * 0.1)) * 30;
+        }
+        // Chochin swings
+        if (obs.type === 'CHOCHIN_OBAKE') {
+          obs.y += Math.sin(frameRef.current * 0.05) * 0.5;
         }
 
         obs.x -= moveSpeed;
@@ -599,6 +659,18 @@ export const RunnerGame = () => {
             ctx.drawImage(startAssetsRef.current.tengu, obsX, obsY, 40, 40);
           } else if (obs.type === 'DARUMA') {
             ctx.drawImage(startAssetsRef.current.daruma, obsX, obsY, 40, 40);
+          } else if (obs.type === 'ONI') {
+            ctx.drawImage(startAssetsRef.current.oni, obsX, obsY, 50, 50);
+          } else if (obs.type === 'KASA_OBAKE') {
+            ctx.drawImage(startAssetsRef.current.kasaObake, obsX, obsY, 50, 70);
+          } else if (obs.type === 'CHOCHIN_OBAKE') {
+            ctx.drawImage(
+              startAssetsRef.current.chochinObake,
+              obsX,
+              obsY,
+              40,
+              60
+            );
           } else {
             // Fallback
             ctx.fillStyle = accentColor;
