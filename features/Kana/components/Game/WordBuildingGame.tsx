@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { kana } from '@/features/Kana/data/kana';
 import useKanaStore from '@/features/Kana/store/useKanaStore';
-import { CircleCheck, CircleX, CircleArrowRight } from 'lucide-react';
+import { CircleCheck, CircleX, CircleArrowRight, Trash2 } from 'lucide-react';
 import { Random } from 'random-js';
 import { useCorrect, useError, useClick } from '@/shared/hooks/useAudio';
 import GameIntel from '@/shared/components/Game/GameIntel';
@@ -40,7 +40,7 @@ const isKatakana = (char: string): boolean => {
 
 // Tile styles shared between active and blank tiles
 const tileBaseStyles =
-  'relative flex items-center justify-center rounded-3xl px-6 sm:px-8 py-3 text-2xl  sm:text-3xl border-b-8';
+  'relative flex items-center justify-center rounded-3xl px-6 sm:px-8 py-3 text-2xl  sm:text-3xl border-b-10';
 
 interface TileProps {
   id: string;
@@ -62,7 +62,7 @@ const ActiveTile = memo(({ id, char, onClick, isDisabled }: TileProps) => {
         tileBaseStyles,
         'cursor-pointer transition-colors',
         // Match ActionButton's smooth press animation: translate down + add margin to prevent layout shift
-        'active:mb-[8px] active:translate-y-[8px] active:border-b-0',
+        'active:mb-[10px] active:translate-y-[10px] active:border-b-0',
         'border-[var(--secondary-color-accent)] bg-[var(--secondary-color)] text-[var(--background-color)]',
         isDisabled && 'cursor-not-allowed opacity-50'
       )}
@@ -344,6 +344,12 @@ const WordBuildingGame = ({
     [isChecking, placedTiles]
   );
 
+  const handleClearPlaced = useCallback(() => {
+    if (isChecking) return;
+    playClick();
+    setPlacedTiles([]);
+  }, [isChecking, playClick]);
+
   // Not enough characters for word building
   if (selectedKana.length < wordLength || wordData.wordChars.length === 0) {
     return null;
@@ -461,22 +467,20 @@ const WordBuildingGame = ({
             {bottomBarState === 'correct' ? (
               <CircleCheck className='h-10 w-10 text-[var(--main-color)] sm:h-12 sm:w-12' />
             ) : (
-              <CircleX className='h-10 w-10 text-[var(--secondary-color)] sm:h-12 sm:w-12' />
+              <CircleX className='h-10 w-10 text-[var(--main-color)] sm:h-12 sm:w-12' />
             )}
             <div className='flex flex-col'>
               <span
                 className={clsx(
-                  'text-lg font-bold sm:text-2xl',
-                  bottomBarState === 'correct'
-                    ? 'text-[var(--main-color)]'
-                    : 'text-[var(--secondary-color)]'
+                  'text-lg sm:text-2xl',
+                  'text-[var(--secondary-color)]'
                 )}
               >
                 {bottomBarState === 'correct'
                   ? 'Nicely done!'
-                  : 'Correct solution:'}
+                  : 'Wrong! Correct solution:'}
               </span>
-              <span className='text-sm font-medium text-[var(--secondary-color)]/60 sm:text-lg'>
+              <span className='text-sm text-[var(--main-color)] sm:text-lg'>
                 {wordData.answerChars.join('')}
               </span>
             </div>
@@ -484,17 +488,38 @@ const WordBuildingGame = ({
         </div>
 
         {/* Right Container: 50% width, aligned left */}
-        <div className='flex w-1/2 items-center justify-center'>
+        <div className='flex w-1/2 flex-row items-center justify-center gap-3'>
           <ActionButton
             ref={buttonRef}
             borderBottomThickness={12}
             borderRadius='3xl'
-            className='w-auto px-6 py-2.5 text-lg font-medium sm:px-12 sm:py-3 sm:text-xl'
+            className={clsx(
+              'w-auto px-6 py-2.5 text-lg font-medium transition-all duration-200 sm:px-12 sm:py-3 sm:text-xl',
+              !canCheck && !showContinue && 'cursor-not-allowed opacity-60'
+            )}
             onClick={showContinue ? handleContinue : handleCheck}
             disabled={!canCheck && !showContinue}
           >
             <span>{showContinue ? 'continue' : 'check'}</span>
           </ActionButton>
+
+          {!showContinue && (
+            <ActionButton
+              borderBottomThickness={12}
+              borderRadius='3xl'
+              colorScheme='secondary'
+              borderColorScheme='secondary'
+              className={clsx(
+                'w-auto px-4 py-2.5 transition-all duration-200 sm:px-6 sm:py-3',
+                !canCheck && 'cursor-not-allowed opacity-60'
+              )}
+              onClick={handleClearPlaced}
+              disabled={!canCheck}
+              aria-label='Clear all tiles'
+            >
+              <Trash2 className='sm:h-6 sm:w-6' size={20} />
+            </ActionButton>
+          )}
         </div>
       </div>
 
