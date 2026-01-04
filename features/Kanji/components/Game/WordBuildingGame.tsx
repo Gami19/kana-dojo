@@ -81,7 +81,7 @@ const celebrationBounceVariants = {
 
 // Tile styles shared between active and blank tiles
 const tileBaseStyles =
-  'relative flex items-center justify-center rounded-3xl px-6 sm:px-8 py-3 text-xl sm:text-2xl border-b-10 transition-all duration-150';
+  'relative flex items-center justify-center rounded-3xl px-6 sm:px-8 py-3 border-b-10 transition-all duration-150';
 
 interface TileProps {
   id: string;
@@ -107,12 +107,18 @@ const ActiveTile = memo(
           'cursor-pointer transition-colors',
           'active:mb-[10px] active:translate-y-[10px] active:border-b-0',
           'border-[var(--secondary-color-accent)] bg-[var(--secondary-color)] text-[var(--background-color)]',
-          isDisabled && 'cursor-not-allowed opacity-50'
+          isDisabled && 'cursor-not-allowed opacity-50',
+          // Larger font for kanji tiles, smaller for meaning tiles
+          isKanji ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'
         )}
         transition={springConfig}
         lang={isKanji ? 'ja' : undefined}
       >
-        <FuriganaText text={char} reading={reading} />
+        <FuriganaText
+          text={char}
+          reading={reading}
+          className='flex items-center justify-center'
+        />
       </motion.button>
     );
   }
@@ -122,17 +128,30 @@ ActiveTile.displayName = 'ActiveTile';
 
 // Blank placeholder - no layoutId, just takes up space
 const BlankTile = memo(
-  ({ char, reading }: { char: string; reading?: string }) => {
+  ({
+    char,
+    reading,
+    isKanji
+  }: {
+    char: string;
+    reading?: string;
+    isKanji?: boolean;
+  }) => {
     return (
       <div
         className={clsx(
           tileBaseStyles,
           'border-transparent bg-[var(--border-color)]/30',
-          'select-none'
+          'select-none',
+          isKanji ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'
         )}
       >
         <span className='opacity-0'>
-          <FuriganaText text={char} reading={reading} />
+          <FuriganaText
+            text={char}
+            reading={reading}
+            className='flex items-center justify-center'
+          />
         </span>
       </div>
     );
@@ -546,6 +565,7 @@ const KanjiWordBuildingGame = ({
               <BlankTile
                 char={char}
                 reading={isKanjiTile ? getKanjiReading(char) : undefined}
+                isKanji={isKanjiTile}
               />
 
               {/* Active tile on top when NOT placed */}
