@@ -25,7 +25,17 @@ import {
   Eclipse,
   Layers,
   AudioLines,
-  Lightbulb
+  Lightbulb,
+  Gamepad2,
+  ArrowUpDown,
+  Cookie,
+  Magnet,
+  Clock,
+  Circle,
+  Dice5,
+  Dna,
+  Hand,
+  SquareAsterisk
 } from 'lucide-react';
 
 export type Experiment = {
@@ -38,6 +48,77 @@ export type Experiment = {
 };
 
 export const experiments: Experiment[] = [
+  // Super Fun Experiments (2026-01-08 Evening)
+  {
+    name: 'Kana Wordle',
+    description: 'Guess kana from romanji',
+    href: '/experiments/wordle',
+    icon: SquareAsterisk,
+    color: 'text-green-400'
+  },
+  {
+    name: 'Kana Catch',
+    description: 'Catch falling kana!',
+    href: '/experiments/catch',
+    icon: Hand,
+    color: 'text-amber-400'
+  },
+  {
+    name: 'Kana DNA',
+    description: 'Mesmerizing double helix',
+    href: '/experiments/dna',
+    icon: Dna,
+    color: 'text-pink-400'
+  },
+  {
+    name: 'Kana Slot',
+    description: 'Slot machine fun',
+    href: '/experiments/slot',
+    icon: Dice5,
+    color: 'text-yellow-500'
+  },
+  {
+    name: 'Kana Bounce',
+    description: 'Physics playground',
+    href: '/experiments/bounce',
+    icon: Circle,
+    color: 'text-cyan-400'
+  },
+  {
+    name: 'Kana Clock',
+    description: 'Japanese time display',
+    href: '/experiments/clock',
+    icon: Clock,
+    color: 'text-blue-400'
+  },
+  {
+    name: 'Kana Magnet',
+    description: 'Attract and repel kana',
+    href: '/experiments/magnet',
+    icon: Magnet,
+    color: 'text-red-400'
+  },
+  {
+    name: 'Kana Fortune',
+    description: 'Spin the wheel!',
+    href: '/experiments/fortune',
+    icon: Cookie,
+    color: 'text-purple-400'
+  },
+  {
+    name: 'Kana Gravity',
+    description: 'Flip gravity physics',
+    href: '/experiments/gravity',
+    icon: ArrowUpDown,
+    color: 'text-slate-300'
+  },
+  {
+    name: 'Kana Snake',
+    description: 'Classic snake game',
+    href: '/experiments/snake',
+    icon: Gamepad2,
+    color: 'text-lime-400'
+  },
   // Newest Experiments (2026-01-08)
   {
     name: 'Kana Glow',
